@@ -14,7 +14,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     let url = `${OPENAI_API_HOST}/v1/models`;
     if (OPENAI_API_TYPE === 'azure') {
-      url = `${OPENAI_API_HOST}/openai/deployments?api-version=${OPENAI_API_VERSION}`;
+      // TODO: Change to Azure API https://management.azure.com, current method is deprecated only API 2023-03-15-preview works
+      url = `${OPENAI_API_HOST}/openai/deployments?api-version=2023-03-15-preview`;
     }
 
     const response = await fetch(url, {
