@@ -13,6 +13,21 @@ Supports:
 
 ## Deploy
 
+### Azure
+
+The Infra folder contains a set of Bicep templates that deploy this Chat UI application using Azure App Service and Azure Open AI.
+
+App Service is deployed with a Docker image associated with this repo.
+
+Deployment can be done using the Azure Developer CLI (azd) or Azure CLI.
+
+To deploy using azd, run the following commands:
+
+```bash
+azd auth login
+azd provision
+```
+
 ### **Docker**
 
 Build locally:
@@ -25,7 +40,7 @@ docker run -e OPENAI_API_KEY=xxxxxxxx -p 3000:3000 aoai-chatgpt-ui
 Pull from ghcr:
 
 ```bash
-docker run -e OPENAI_API_KEY=xxxxxxxx -p 3000:3000 ghcr.io/goncalvesj/aoai-chatbot-ui:latest
+docker run -e OPENAI_API_KEY=xxxxxxxx -p 3000:3000 ghcr.io/goncalvesj/aoai-chatbot-ui:main
 ```
 
 ## Running Locally
