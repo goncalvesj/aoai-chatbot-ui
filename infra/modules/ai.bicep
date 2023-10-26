@@ -9,6 +9,8 @@ param publicNetworkAccess string = 'Enabled'
 param sku object = {
   name: 'S0'
 }
+param virtualNetworkSubnetId string = ''
+
 
 resource account 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: name
@@ -18,6 +20,15 @@ resource account 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   properties: {
     customSubDomainName: customSubDomainName
     publicNetworkAccess: publicNetworkAccess
+    networkAcls: {
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          id: virtualNetworkSubnetId
+          ignoreMissingVnetServiceEndpoint: false
+        }
+      ]
+    }
   }
   sku: sku
 }

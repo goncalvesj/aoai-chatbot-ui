@@ -22,6 +22,7 @@ param numberOfWorkers int = -1
 param use32BitWorkerProcess bool = false
 param ftpsState string = 'FtpsOnly'
 param healthCheckPath string = ''
+param virtualNetworkSubnetId string = ''
 
 resource appService 'Microsoft.Web/sites@2022-09-01' = {
   name: name
@@ -45,6 +46,8 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
     clientAffinityEnabled: clientAffinityEnabled
     httpsOnly: true
     clientCertEnabled: clientCertEnabled
+    virtualNetworkSubnetId: virtualNetworkSubnetId
+    vnetRouteAllEnabled: true
   }
 
   identity: {

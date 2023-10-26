@@ -48,7 +48,33 @@ param openAIModelVersion string = '0613'
 resource openAiResourceGroup 'Microsoft.Resources/resourceGroups@2023-07-01' existing = if (!empty(openAiResourceGroupName)) {
   name: !empty(openAiResourceGroupName) ? openAiResourceGroupName : rg.name
 }
+
+param subnetList array = [
+  {
+    name: 'App-Subnet'
+    value: '10.4.1.0/24'
+    rules: []
+  }
+]
+param vnetName string = ''
+param vnetAddressPrefix string = '10.4.0.0/16'
+
+module vnet 'modules/network.bicep' = {
+  name: 'vnet'
+  scope: rg
+  params: {
+    location: location
+    list: subnetList
+    vnetAddressPrefix: vnetAddressPrefix
+    vnetName: !empty(vnetName) ? vnetName : '${abbrs.webServerFarms}${resourceToken}'
+  }
+}
+var appServiceSubnetId = '${vnet.outputs.vnetId}/subnets/${subnetList[0].name}'
+
 module openAi 'modules/ai.bicep' = {
+  dependsOn: [
+    vnet
+  ]
   name: 'openai'
   scope: openAiResourceGroup
   params: {
@@ -69,6 +95,7 @@ module openAi 'modules/ai.bicep' = {
         capacity: 30
       }
     ]
+    virtualNetworkSubnetId: appServiceSubnetId
   }
 }
 
@@ -90,14 +117,20 @@ module appServicePlan 'modules/app-plan.bicep' = {
     kind: 'linux'
   }
 }
+
 module backend 'modules/app-service.bicep' = {
+  dependsOn: [
+    appServicePlan
+    vnet
+  ]
   name: 'web'
   scope: rg
   params: {
     name: appServiceName
     location: location
     tags: union(tags, { 'azd-service-name': 'backend' })
-    appServicePlanId: appServicePlan.outputs.id    
+    appServicePlanId: appServicePlan.outputs.id
+    virtualNetworkSubnetId: appServiceSubnetId
     linuxFxVersion: 'DOCKER|ghcr.io/goncalvesj/aoai-chatbot-ui:main'
     appSettings: {
       AZURE_DEPLOYMENT_ID: openAIModel
@@ -109,6 +142,7 @@ module backend 'modules/app-service.bicep' = {
     }
   }
 }
+
 // Add outputs from the deployment here, if needed.
 //
 // This allows the outputs to be referenced by other bicep deployments in the deployment pipeline,
